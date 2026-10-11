@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "prompt": "核查这条消息：某平台 2026 年中秋国庆消费报告显示本地生活交易额同比增长 30%",
+    "expected": "给出明确评级（TRUE/MOSTLY TRUE/MIXED等），列出双源证据、信源质量、关键上下文，并指出是否存在统计操纵或断章取义；命中「报告」关键词时自动加挂微信通道回溯原文"
+  },
+  {
+    "id": 2,
+    "prompt": "求证：中美关税协议已签署",
+    "expected": "按评级量表给出 verdict；说明 168h 窗口内的可验证性；标注来源冲突或无法核实；绝不编造"
+  },
+  {
+    "id": 3,
+    "prompt": "帮我 fact-check 这条政策：央行宣布降准50bp",
+    "expected": "输出结构化报告：Claim/Verdict/Analysis/Evidence/Context/Source Quality/Correct Information/Sources；识别是否存在误导手法"
+  }
+]

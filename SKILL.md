@@ -1,0 +1,192 @@
+---
+name: fact-cross-check-skill
+description: 消息去伪存真 — 三通道查证 + 甄选规则工具集。当用户需要对「叙事 / 事件 / 政策 / 平台规则 / 公司声明」类信息做事实核查、需要交叉第二信源、或需回溯微信公众号原文时调用本 skill。整合三个独立查证通道：①腾讯较真（中文主源，jiaozhen_cli.sh），②WebCite API（国际源补强，webcite_cli.sh），③微信公众号搜索（weixin_search.sh，搜狗微信），并落地甄选规则：双源验证、168 小时窗口、原文优先、版本差异检查、失败降级。典型触发：「核查这条消息」「XX 公司这则声明是真的吗」「求证一下这个政策」「这份报告的原文出处」「帮我 fact-check」「去伪存真」。
+---
+
+# 消息去伪存真（fact-cross-check-skill）
+
+三通道查证 + 甄选规则工具集。把"中文一手查证 + 国际源立场参考 + 微信公众号原文回溯 + 甄选协议"封装成一个统一 skill。
+
+## 何时使用
+
+| 场景 | 触发词示例 |
+|------|-----------|
+| 核查热点传闻 / 叙事 / 政策 / 公司声明 | "核查 XX 是不是真的"、"求证这条政策"、"fact-check 一下" |
+| 事件类主张的第二源交叉核查 | "XX 事件还有没有第二源"、"WebSearch 之外再交叉一手" |
+| 国际源参考（英文 / 海外媒体） | "外媒怎么看 XX"、"Reuters / Bloomberg 怎么报" |
+| 平台规则 / 官方报告的公众号原文溯源 | "这份报告的原始出处"、"公众号原文在哪" |
+| 周期性报告的事实核查环节 | 报告生成流程中需要落地查证标签 |
+
+**不适用**（明确避免误触发）：
+- 纯资讯检索 → 用 `news-search` 或 `tencent-news` 类检索技能
+- 需要实时数据的命题 → 本 skill 后端无实时数据覆盖，不做数据查证
+
+## 快速开始
+
+### 1. 单命题双后端查证（最常用）
+
+```bash
+SKILL=~/.workbuddy/skills/fact-cross-check-skill
+
+# 自动选择后端：中文 → 腾讯较真（命中「报告/政策/说明/公告/指南/规则/费率」类关键词时自动加挂微信通道）；英文 → WebCite；可显式指定
+bash $SKILL/scripts/verify.sh "中美关税协议已正式签署"
+
+# 显式指定后端
+bash $SKILL/scripts/verify.sh "The US Fed cut rates by 25bps in July 2026" --source=webcite
+bash $SKILL/scripts/verify.sh "中美关税协议签署" --source=jiaozhen
+bash $SKILL/scripts/verify.sh "抖音生活服务 中秋国庆消费报告 原文" --source=weixin   # 强制微信公众号通道
+bash $SKILL/scripts/verify.sh "豆包 酒店抽佣 12%" --source=both                     # 双后端交叉（中文附赠微信通道）
+```
+
+### 2. 直接调底层 CLI（专家用法）
+
+```bash
+SKILL=~/.workbuddy/skills/fact-cross-check-skill
+
+# 腾讯较真（中文主源）
+sh $SKILL/scripts/jiaozhen_cli.sh --query "中美关税协议签署" --caller fact-cross-check
+
+# WebCite（国际源补强，需 ~/.webcite/config.env 已配置 key）
+sh $SKILL/scripts/webcite_cli.sh "The Fed cut rates by 25bps"
+sh $SKILL/scripts/webcite_cli.sh "..." --no-stance   # 省 credit，仅检索
+sh $SKILL/scripts/webcite_cli.sh "..." --json         # 原始 JSON
+```
+
+### 3. 甄选规则批量核查（报告前置环节）
+
+详见 `references/sources_catalog.md`（信源清单 + 优先级 + 失败降级）和 `references/geo_scan_schema.md`（事件扫描 schema 与窗口规则）。
+
+## 后端选择策略
+
+| 输入语言 / 性质 | 主源 | 补强 | 备注 |
+|----------------|------|------|------|
+| 中文叙事 / 公告 / 传闻 | 腾讯较真 | WebCite（如果含海外背景） | 腾讯较真对中文新闻覆盖深 |
+| 英文国际媒体 / 政策 / 公司传闻 | WebCite | — | 腾讯较真对英文覆盖浅 |
+| 事件类主张 | WebSearch + 腾讯较真 | WebCite | 三源交叉 |
+| **平台规则 / 官方报告 / 费率政策的原文溯源** | **weixin（搜狗微信搜索）** | — | 较真对平台商务规则返回空；公众号是此类信源的原始出处（见 `references/sources_catalog.md` 公众号官方号层） |
+
+## 双源交叉仲裁规则（铁律）
+
+1. **两源一致** → 采用主源结论，标注 `✅双源一致`。
+2. **两源冲突** → 按来源可信度与 `source_type` 仲裁：
+   - 优先级：`Government Document / Journal / Trusted Media` > `Article` > `Social Media`
+   - 同时引用两源原文 + 标注冲突原因，**不强行调和**。
+3. **一源返回 `unverifiable`** → 如实标注「另一源无法核实」，不替换为支持/反驳。
+4. **一源不可用**（key 缺失 / 额度耗尽 / API 失败）→ 标注「⚠️ 不可用」，**绝不回退 WebSearch 编造**。
+
+## 甄选规则（落地"求真去伪"协议）
+
+详见 `references/sources_catalog.md`。核心要点：
+
+1. **双源验证**：事件每条至少 2 个独立来源（`sources >= 2`），否则标"不可靠"。
+2. **168 小时窗口**：事件 `event_date` 须落在 `[报告日-6, 报告日]`；过期不纳入。
+3. **window_end 覆盖报告日**：JSON 文件 `window_end` 必须 ≥ 报告日，否则只标"⚠️ 扫描未完成"。
+4. **相关性评分**：按"主题关联度 + 可核验锚点 + 事件烈度 + 验证等级"评分，取 Top N。
+5. **第三源标签**：🔴存疑 / ✅印证 / ⚪无覆盖 / ⚠️未完成超时（**不阻断采集**，仅标注）。
+6. **失败降级**：单源失败 → 降级标记（如 `_degraded` / `⚠️扫描未完成`），不报错退出。
+7. **原文优先**（2026-10-11 新增）：微信公众号官方号原文 > 权威媒体转载 > 自媒体转述；仅有转载时必须标注「未回溯原文」。
+8. **版本差异检查**（2026-10-11 新增）：≥2 家媒体转载内容不一致时（实录：豆包销售额环比+71% 仅上证报版有，人民网版无），自动触发原文回溯动作（weixin 通道），报告中输出「版本差异」提示。
+
+## 输出模板（把查证结论写成可交付报告）
+
+双源查证完成后，统一按下面结构输出。不要只给标签，要把“评级 + 证据 + 信源质量 + 纠偏信息”一次写清楚。
+
+### 评级量表
+
+| 评级 | 含义 | 适用场景 |
+|---|---|---|
+| ✅ TRUE | 命题准确，有 ≥2 个独立可靠来源交叉印证 | 双源一致，且无重大上下文缺失 |
+| ⚠️ MOSTLY TRUE | 核心事实准确，但缺重要上下文或细节有偏差 | 双源一致但某来源时间/口径略偏 |
+| 🔶 MIXED | 命题真假参半，或两源结论直接冲突 | 双源冲突、或同一命题含多个断言 |
+| ❌ MOSTLY FALSE | 命题误导性强或大面积失准 | 核心事实错误但夹杂个别真元素 |
+| 🚫 FALSE | 命题可被明确证伪 | 有官方/一手证据直接否定 |
+| ❓ UNVERIFIABLE | 现有证据既不能确认也不能否定 | 单源无法核实、168h 窗口外、双源均不可用 |
+
+### 报告结构
+
+```markdown
+## Claim
+[逐字抄写被核查的命题]
+
+## Verdict: [RATING]
+[一句话结论]
+
+## Analysis
+[为什么是这个评级：双源是否一致、是否存在冲突、关键缺失点是什么]
+
+**Evidence:**
+- [关键支持/反驳证据，带来源]
+- [次要证据]
+
+**Context:**
+- [重要背景或限定条件]
+- [常见误解]
+
+**Source Quality:**
+- [来源可信度评估：Government/Journal/Trusted Media/Article/Social Media]
+- [是否存在二手转发、快讯播报、黑名单媒体]
+
+## Correct Information
+[如命题为 FALSE/MOSTLY FALSE/MIXED，给出准确版本]
+
+## Sources
+1. [来源名称 + URL/检索式] — [可信度说明]
+2. ...
+```
+
+### 误导手法识别清单
+
+输出前扫一遍命题和证据，检查是否命中以下模式：
+
+| 误导类型 | 常见表现 | 应对 |
+|---|---|---|
+| 统计操纵 | cherry-pick 单月数据、混淆总量与增量、忽略口径 | 要求原始数据口径，标注时间窗口 |
+| 断章取义 | 截取公告半句话、把“拟”说成“已”、把“意向”说成“落地” | 回查原文，标注完整句子和限定词 |
+| 错误等价 | 把行业政策等同于个体影响、把传闻等同于官宣 | 拆分命题，分别评级 |
+| 时间穿越 | 用旧公告充当新事件、已过窗口期的“突发” | 核对 event_date，标注是否在 168h 内 |
+
+> 注意：本模板**不替代**双源查证和甄选规则，只规定“查完后怎么写报告”。
+
+## 前置：API Key 配置
+
+| 后端 | Key 获取 | 配置文件 |
+|------|---------|---------|
+| 腾讯较真 | 内部免费，走 `~/.tencent-news-cli` 凭据链 | 无需单独配置 |
+| WebCite | https://webcite.co/api-keys（免费档 50 credits/月） | `~/.webcite/config.env`（权限 600） |
+
+WebCite 配置模板：
+```bash
+mkdir -p ~/.webcite && cat > ~/.webcite/config.env <<EOF
+WEBCITE_API_KEY=webcite_xxxxx
+WEBCITE_API_URL=https://api.webcite.co
+EOF
+chmod 600 ~/.webcite/config.env
+```
+
+Key 缺失时 `webcite_cli.sh` 干净报错 exit=2，**不静默编造**。
+
+## 失败降级与可靠性
+
+- **腾讯较真不可用** → 标注「⚠️ 较真不可用，仅 WebCite 结果」，不重试轰炸。
+- **WebCite 额度耗尽（429）** → 标注「⚠️ WebCite 额度耗尽」，建议次日重试或购买加量包。
+- **微信通道（weixin）降级**：搜狗微信搜索（主）→ 被反爬拦截（exit=3）→ 如实标注「⚠️ 公众号通道未完成」，可建议用户改用 WebSearch 找到公众号文章 URL 后人工核对；**不编造原文内容**。
+- **两源全挂** → 标注「⚠️ 双源均不可用，命题待查」，**绝不回退 WebSearch / 自行编造**。
+- **命中黑名单来源**（媒体二手 / 快讯 / 播报类）→ 整体剔除。
+
+## Resources
+
+### scripts/
+- `verify.sh` — 统一入口（三通道智能选择 + 显式指定：jiaozhen / webcite / weixin / both）
+- `jiaozhen_cli.sh` — 腾讯较真 CLI 包装
+- `jiaozhen_cli-state.sh` — 较真 CLI 状态机辅助
+- `weixin_search.sh` — 微信公众号文章搜索（搜狗微信主通道；支持 `--limit` / `--json`）
+- `webcite_cli.py` — WebCite API 流式客户端（纯 stdlib）
+- `webcite_cli.sh` — WebCite CLI 入口
+
+### references/
+- `sources_catalog.md` — 全信源清单（A/B 分类、调用示例、失败降级、优先级）
+- `geo_scan_schema.md` — 事件扫描 OUTPUT_SCHEMA 与加载器校验规则
+
+## 合规
+
+输出仅供信息核查与研究参考，不构成任何专业建议。请以官方披露为准。
