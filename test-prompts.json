@@ -13,5 +13,15 @@
     "id": 3,
     "prompt": "帮我 fact-check 这条政策：央行宣布降准50bp",
     "expected": "输出结构化报告：Claim/Verdict/Analysis/Evidence/Context/Source Quality/Correct Information/Sources；识别是否存在误导手法"
+  },
+  {
+    "id": 4,
+    "prompt": "帮我核对这篇报告摘要里的营收、交付量、市占率数字是否准确",
+    "expected": "路由到本地数据终端通道（关键数字逐点对账），逐点标注「准确/有出入/查不到」三档；不误拒、不跑去较真判事件真伪"
+  },
+  {
+    "id": 5,
+    "prompt": "核查这则公告是不是真的，顺带把里面的季度交付量数字也验一下",
+    "expected": "双通道协同：事件真伪走较真/WebCite 六级评级，数字部分走本地数据终端三档逐点标注，输出分节不混用"
   }
 ]

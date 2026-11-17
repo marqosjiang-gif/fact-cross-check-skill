@@ -1,10 +1,10 @@
-# geopolitical_events.json Schema 与校验规则（机制 B）
+# 事件扫描 JSON Schema 与校验规则（机制 B）
 
-事件扫描**不能在脚本内直连 WebSearch**（WebSearch 是 Agent 工具）。流程为：Agent 参照维度种子词跑 WebSearch → 把结果写入 `geopolitical_events.json` → 报告加载器读取。
+事件扫描**不能在脚本内直连 WebSearch**（WebSearch 是 Agent 工具）。流程为：Agent 参照维度种子词跑 WebSearch → 把结果写入事件扫描 JSON 文件 → 下游报告/加载器读取并校验。
 
-`scripts/geo_scan.py` 负责生成维度提示词（`prompts`）、写骨架（`write-template`）、校验（`validate`）。
+本文件约定 OUTPUT_SCHEMA 与校验规则；校验器可按此 schema 自行实现（任一脚本/加载器均可复用）。
 
-## 维度种子词库（8 维，内嵌于 geo_scan.py）
+## 维度种子词库（8 维示例，可按需增删）
 
 | 维度 | 种子关键词（示例） |
 |---|---|
@@ -49,16 +49,16 @@
 }
 ```
 
-## 加载器校验规则（报告 `_load_geopolitical_events_json`）
+## 加载器校验规则
 
 必须满足，否则只返回"⚠️ 事件扫描未完成"标记：
 
-1. **window_end ≥ 报告日**：`scan_window_end < report_end` → 拒收（已固化为 `geo-scan-pre-report-gate` 规则）。
+1. **window_end ≥ 报告日**：`scan_window_end < report_end` → 拒收。
 2. **逐事件 168h 窗口**：`event_date` 须在 `[报告日-6, 报告日]`。
 3. **双源验证**：每条事件 `len(sources) >= 2`。
 4. **影响度评分**：按评分降序取 Top N（默认 5）。
 
-`geo_scan.py validate --path X --report-date Y` 会在合并前检查上述 1–3 项并输出告警，便于 Agent 提前修。
+合并/加载前建议先运行上述 1–3 项校验并输出告警，便于 Agent 提前修。
 
 ## 第三源核查（jiaozhen）
 

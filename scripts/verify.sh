@@ -32,6 +32,9 @@ usage() {
   --json            输出原始 JSON（不渲染中文结构化报告）
   --help            显示帮助
 
+第四通道（本地数据终端，报告关键数字逐点对账）在 Agent 会话内调用，
+不经本脚本——见 SKILL.md「通道边界消歧表」。
+
 示例:
   bash verify.sh "中美关税协议签署"
   bash verify.sh "The Fed cut rates by 25bps" --source=webcite

@@ -6,8 +6,8 @@
 DIR="$(cd "$(dirname "$0")" && pwd)"
 PY="$DIR/webcite_cli.py"
 
-# 优先使用受管 python，回退到 PATH 中 python3
-MNG="${MANAGED_PYTHON:-$HOME/.workbuddy/binaries/python/current/bin/python3}"
+# 可用 MANAGED_PYTHON 环境变量指定 python，否则回退到 PATH 中 python3
+MNG="${MANAGED_PYTHON:-}"
 if [ -x "$MNG" ]; then
   PYTHON="$MNG"
 elif command -v python3 >/dev/null 2>&1; then

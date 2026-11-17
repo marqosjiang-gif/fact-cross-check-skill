@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" font-family="Inter, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <!-- Notion-style light banner: warm paper, whisper borders, single blue accent -->
+  <rect width="1280" height="400" fill="#ffffff"/>
+  <rect x="0" y="0" width="1280" height="400" fill="#f6f5f4" opacity="0.45"/>
+
+  <!-- header -->
+  <rect x="64" y="56" width="238" height="28" rx="14" fill="#0075de" opacity="0.08"/>
+  <text x="183" y="75" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12" letter-spacing="1.5" fill="#0075de">FACT-CROSS-CHECK-SKILL</text>
+
+  <text x="64" y="140" font-size="42" font-weight="700" fill="#1a1a1a">消息去伪存真</text>
+  <text x="64" y="172" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="15" fill="#615d59">Verify · Cross-check · Grade · Cite</text>
+  <text x="1216" y="140" text-anchor="end" font-size="14" fill="#a39e98">四通道查证 · 8 条甄选规则 · 0 编造承诺</text>
+
+  <line x1="64" y1="200" x2="1216" y2="200" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+
+  <!-- four source pills -->
+  <g font-size="15" font-weight="600">
+    <rect x="64" y="224" width="270" height="40" rx="10" fill="#ffffff" stroke="rgba(0,0,0,0.1)"/>
+    <circle cx="90" cy="244" r="5" fill="#0075de"/>
+    <text x="106" y="249" fill="#31302e">较真 · 中文主源</text>
+
+    <rect x="348" y="224" width="270" height="40" rx="10" fill="#ffffff" stroke="rgba(0,0,0,0.1)"/>
+    <circle cx="374" cy="244" r="5" fill="#0075de"/>
+    <text x="390" y="249" fill="#31302e">WebCite · 国际源</text>
+
+    <rect x="632" y="224" width="270" height="40" rx="10" fill="#ffffff" stroke="rgba(0,0,0,0.1)"/>
+    <circle cx="658" cy="244" r="5" fill="#0075de"/>
+    <text x="674" y="249" fill="#31302e">公众号 · 原文回溯</text>
+
+    <rect x="916" y="224" width="270" height="40" rx="10" fill="#ffffff" stroke="rgba(0,0,0,0.1)"/>
+    <circle cx="942" cy="244" r="5" fill="#0075de"/>
+    <text x="958" y="249" fill="#31302e">数据终端 · 数字对账</text>
+  </g>
+
+  <!-- converge arrows -->
+  <g stroke="#a39e98" stroke-width="1.5" fill="none">
+    <path d="M199 264 L199 282 Q199 292 209 292 L440 292"/>
+    <path d="M483 264 L483 292"/>
+    <path d="M767 264 L767 292"/>
+    <path d="M1051 264 L1051 282 Q1051 292 1041 292 L840 292"/>
+  </g>
+  <path d="M430 286 L440 292 L430 298 Z" fill="#a39e98"/>
+  <path d="M830 286 L840 292 L830 298 Z" fill="#a39e98"/>
+
+  <!-- merge bar -->
+  <rect x="440" y="292" width="400" height="40" rx="10" fill="#0075de"/>
+  <text x="640" y="317" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">双源交叉仲裁 · 冲突不调和 · 缺口不编造</text>
+  <path d="M634 332 L640 344 L646 332 Z" fill="#a39e98"/>
+
+  <!-- six rating chips -->
+  <g font-size="13" font-weight="600">
+    <rect x="64" y="352" width="92" height="32" rx="16" fill="#e7f3ef"/>
+    <text x="110" y="373" text-anchor="middle" fill="#1f6f52">TRUE</text>
+
+    <rect x="168" y="352" width="168" height="32" rx="16" fill="#fff8e6"/>
+    <text x="252" y="373" text-anchor="middle" fill="#8a6d1a">MOSTLY TRUE</text>
+
+    <rect x="348" y="352" width="96" height="32" rx="16" fill="#fff1e0"/>
+    <text x="396" y="373" text-anchor="middle" fill="#9a5a1a">MIXED</text>
+
+    <rect x="456" y="352" width="176" height="32" rx="16" fill="#fdeaea"/>
+    <text x="544" y="373" text-anchor="middle" fill="#a53a3a">MOSTLY FALSE</text>
+
+    <rect x="644" y="352" width="92" height="32" rx="16" fill="#fbdcdc"/>
+    <text x="690" y="373" text-anchor="middle" fill="#932727">FALSE</text>
+
+    <rect x="748" y="352" width="172" height="32" rx="16" fill="#f0f0ef"/>
+    <text x="834" y="373" text-anchor="middle" fill="#615d59">UNVERIFIABLE</text>
+  </g>
+</svg>

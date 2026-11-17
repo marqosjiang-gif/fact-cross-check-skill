@@ -1,5 +1,5 @@
 #!/bin/sh
-# jiaozhen-factcheck 状态检查
+# tencent-news-cli（较真通道）状态检查
 # 输出 JSON，字段对齐 SKILL.md Phase 1 解析约定。
 CLI="${JIAOZHEN_CLI:-$HOME/.tencent-news-cli/bin/tencent-news-cli}"
 
